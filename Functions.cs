@@ -2,7 +2,7 @@ using System;
 using WeScriptWrapper;
 
 
-namespace DeadByDaylight
+namespace SpellBreak
 {
     public class Functions
     {

@@ -1,5 +1,5 @@
 ﻿using System;
-namespace DeadByDaylight
+namespace SpellBreak
 {
     public class Offsets
 

@@ -6,7 +6,7 @@ using WeScript.SDK.UI;
 using WeScript.SDK.UI.Components;
 
 
-namespace DeadByDaylight
+namespace SpellBreak
 {
     public class Program
     {
