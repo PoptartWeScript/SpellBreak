@@ -43,14 +43,12 @@ namespace SpellBreak
 
                             if (ULocalPlayerControler != IntPtr.Zero)
                             {
-                                var Upawn = Memory.ZwReadPointer(Program.processHandle, (IntPtr)(ULocalPlayerControler.ToInt64() + Offsets.UE.APlayerController.AcknowledgedPawn), true);
-                                var UplayerState = Memory.ZwReadPointer(Program.processHandle, (IntPtr)(Upawn.ToInt64() + Offsets.UE.APawn.PlayerState), true);
-                                var APlayerCameraManager = Memory.ZwReadPointer(Program.processHandle, (IntPtr)(ULocalPlayerControler.ToInt64() + 0x3e8), true);
+                                var APlayerCameraManager = Memory.ZwReadPointer(Program.processHandle, (IntPtr)(ULocalPlayerControler.ToInt64() + Offsets.UE.APlayerController.PlayerCameraManager), true);
                                 if (APlayerCameraManager != IntPtr.Zero)
                                 {
-                                    Program.FMinimalViewInfo_Location = Memory.ZwReadVector3(Program.processHandle, (IntPtr)APlayerCameraManager.ToInt64() + 0x1A90 + 0x0000);
-                                    Program.FMinimalViewInfo_Rotation = Memory.ZwReadVector3(Program.processHandle, (IntPtr)APlayerCameraManager.ToInt64() + 0x1A90 + 0x000C);
-                                    float FMinimalViewInfo_FOV2 = Memory.ZwReadFloat(Program.processHandle,(IntPtr)APlayerCameraManager.ToInt64() + 0x1A90 + 0x0018);
+                                    Program.FMinimalViewInfo_Location = Memory.ZwReadVector3(Program.processHandle, (IntPtr)(APlayerCameraManager.ToInt64() + Offsets.UE.APlayerCameraManager.CameraCachePrivate) + 0x0000);
+                                    Program.FMinimalViewInfo_Rotation = Memory.ZwReadVector3(Program.processHandle, (IntPtr)(APlayerCameraManager.ToInt64() + Offsets.UE.APlayerCameraManager.CameraCachePrivate) + 0x000C);
+                                    float FMinimalViewInfo_FOV2 = Memory.ZwReadFloat(Program.processHandle,(IntPtr)(APlayerCameraManager.ToInt64() + Offsets.UE.APlayerCameraManager.CameraCachePrivate) + 0x0018);
                                     float RadFOV = (float)((Program.wndSize.Y * 0.5f) / Math.Tan(Deg2Rad(FMinimalViewInfo_FOV2 * 0.5f)));
                                     Program.FMinimalViewInfo_FOV = (float)(2 * Rad2Deg(atanf(Program.wndSize.X * 0.5f / RadFOV)));
                                 }

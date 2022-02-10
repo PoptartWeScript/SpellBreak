@@ -37,11 +37,11 @@ namespace SpellBreak
         public static IntPtr Upawn = IntPtr.Zero;
         public static IntPtr APlayerCameraManager = IntPtr.Zero;
                
-        public static bool gameProcessExists = false; //avoid drawing if the game process is dead, or not existent
-        public static bool isWow64Process = true; //we all know the game is 32bit, but anyway...
-        public static bool isGameOnTop = false; //we should avoid drawing while the game is not set on top
-        public static bool isOverlayOnTop = false; //we might allow drawing visuals, while the user is working with the "menu"
-        public static uint PROCESS_ALL_ACCESS = 0x1FFFFF; //hardcoded access right to OpenProcess (even EAC strips some of the access flags)
+        public static bool gameProcessExists = false;
+        public static bool isWow64Process = true;
+        public static bool isGameOnTop = false;
+        public static bool isOverlayOnTop = false;
+        public static uint PROCESS_ALL_ACCESS = 0x1FFFFF;
                 
         public static float FMinimalViewInfo_FOV = 0;
 
@@ -72,11 +72,11 @@ namespace SpellBreak
         public static uint LevelUpID = 0;
         public static uint ShrineID = 0;
 
-        public static Vector2 wndMargins = new Vector2(0, 0); //if the game window is smaller than your desktop resolution, you should avoid drawing outside of it
-        public static Vector2 wndSize = new Vector2(0, 0); //get the size of the game window ... to know where to draw
+        public static Vector2 wndMargins = new Vector2(0, 0);
+        public static Vector2 wndSize = new Vector2(0, 0);
         public static Vector2 GameCenterPos = new Vector2(0, 0);
         public static Vector2 GameCenterPos2 = new Vector2(0, 0);
-        public static Vector2 AimTarg2D = new Vector2(0, 0); //for aimbot
+        public static Vector2 AimTarg2D = new Vector2(0, 0);
 
         public static Vector3 FMinimalViewInfo_Location = new Vector3(0, 0, 0);
         public static Vector3 FMinimalViewInfo_Rotation = new Vector3(0, 0, 0);
@@ -117,7 +117,7 @@ namespace SpellBreak
             {
                 public static readonly MenuBool AimGlobalBool = new MenuBool("enableaim", "Enable Aimbot Features", true);
                 public static readonly MenuKeyBind AimKey = new MenuKeyBind("aimkey", "Aimbot HotKey (HOLD)", VirtualKeyCode.LeftMouse, KeybindType.Hold, false);
-                public static readonly MenuSlider AimSpeed = new MenuSlider("aimspeed", "Aimbot Speed %", 12, 1, 100);
+                public static readonly MenuSlider AimSpeed = new MenuSlider("aimspeed", "Aimbot Speed %", 12, 1, 5);
                 public static readonly MenuSlider Distance = new MenuSlider("Distance", "Distance kill%", 12, 1, 100);
                 public static readonly MenuSlider AimFov = new MenuSlider("aimfov", "Aimbot FOV", 100, 4, 1000);
                 public static readonly MenuBool DrawFov = new MenuBool("DrawFOV", "Enable FOV Circle Features", true);
@@ -227,7 +227,7 @@ namespace SpellBreak
                             wndSize = Renderer.GetWindowSize(FindWindow);
                             isGameOnTop = Renderer.IsGameOnTop(FindWindow);
                             GameCenterPos = new Vector2(wndSize.X / 2 + wndMargins.X, wndSize.Y / 2 + wndMargins.Y);
-                            GameCenterPos2 = new Vector2(wndSize.X / 2 + wndMargins.X, wndSize.Y / 2 + wndMargins.Y + 750.0f);//even if the game is windowed, calculate perfectly it's "center" for aim or crosshair
+                            GameCenterPos2 = new Vector2(wndSize.X / 2 + wndMargins.X, wndSize.Y / 2 + wndMargins.Y + 750.0f);
                             isOverlayOnTop = Overlay.IsOnTop();
                         }
                     }
@@ -237,9 +237,9 @@ namespace SpellBreak
         }
         private static void OnRenderer(int fps, EventArgs args)
         {
-            if (!gameProcessExists) return; //process is dead, don't bother drawing
-            if ((!isGameOnTop) && (!isOverlayOnTop)) return; //if game and overlay are not on top, don't draw
-            if (!Components.MainAssemblyToggle.Enabled) return; //main menu boolean to toggle the cheat on or off
+            if (!gameProcessExists) return;
+            if ((!isGameOnTop) && (!isOverlayOnTop)) return;
+            if (!Components.MainAssemblyToggle.Enabled) return;
             GameCenterPos = new Vector2(wndSize.X / 2 + wndMargins.X, wndSize.Y / 2 + wndMargins.Y);
             double fClosestPos = 999999;
             if (GWorldPtr != IntPtr.Zero)
@@ -248,8 +248,8 @@ namespace SpellBreak
                 ULevel = Memory.ZwReadPointer(processHandle, GWorldPtr + 0x38, isWow64Process);
                 if (ULevel != IntPtr.Zero)
                 {
-                    AActors = Memory.ZwReadPointer(processHandle, (IntPtr)ULevel.ToInt64() + 0xA0, isWow64Process);
-                    ActorCnt = Memory.ZwReadUInt32(processHandle, (IntPtr)ULevel.ToInt64() + 0xA8);
+                    AActors = Memory.ZwReadPointer(processHandle, (IntPtr)(ULevel.ToInt64() + Offsets.UE.ULevel.AActors), isWow64Process);
+                    ActorCnt = Memory.ZwReadUInt32(processHandle, (IntPtr)(ULevel.ToInt64() + Offsets.UE.ULevel.AActorsCount));
                     if ((AActors != IntPtr.Zero) && (ActorCnt > 0))
                     {
                         for (uint i = 0; i <= ActorCnt; i++)
@@ -264,10 +264,10 @@ namespace SpellBreak
                                     var retname = GetNameFromID(AActorID);
                                     CachedID.Add(AActorID, retname);
                                 }
-                                USceneComponent = Memory.ZwReadPointer(processHandle, (IntPtr)AActor.ToInt64() + 0x168, isWow64Process);
+                                USceneComponent = Memory.ZwReadPointer(processHandle, (IntPtr)(AActor.ToInt64() + Offsets.UE.AActor.USceneComponent), isWow64Process);
                                 if (USceneComponent != IntPtr.Zero)
                                 {
-                                    if ((AActorID > 0)) //&& (AActorID < 700000)
+                                    if ((AActorID > 0))
                                     {
                                         var retname = CachedID[AActorID];
                                         retname = GetNameFromID(AActorID);
@@ -295,7 +295,7 @@ namespace SpellBreak
                                         if (retname.Contains("ShrineMapMark_C")) ShrineID = AActorID;
 
                                     }
-                                    tempVec = Memory.ZwReadVector3(processHandle, (IntPtr)USceneComponent.ToInt64() + 0x17C);
+                                    tempVec = Memory.ZwReadVector3(processHandle, (IntPtr)(USceneComponent.ToInt64() + Offsets.UE.AActor.tempVec));
 
                                     int dist = (int)(GetDistance3D(FMinimalViewInfo_Location, tempVec));
 
@@ -332,13 +332,10 @@ namespace SpellBreak
                                                     if (Components.AimbotComponent.AimKey.Enabled && Components.AimbotComponent.AimGlobalBool.Enabled && dist > 10)
                                                     {
 
-                                                        double DistX = 0;
-                                                        double DistY = 0;
-                                                        DistX = (AimTarg2D.X) - GameCenterPos.X;
-                                                        DistY = (AimTarg2D.Y) - GameCenterPos.Y;
-
-                                                        double slowDistX = DistX / (1.0f + (Math.Abs(DistX) / (1.0f + Components.AimbotComponent.AimSpeed.Value)));
-                                                        double slowDistY = DistY / (1.0f + (Math.Abs(DistY) / (1.0f + Components.AimbotComponent.AimSpeed.Value)));
+                                                        double DistX = AimTarg2D.X - GameCenterPos.X;
+                                                        double DistY = (AimTarg2D.Y) - GameCenterPos.Y;
+                                                        double slowDistX = DistX / (0.5f + (Math.Abs(DistX) / (1.0f + Components.AimbotComponent.AimSpeed.Value)));
+                                                        double slowDistY = DistY / (0.5f + (Math.Abs(DistY) / (1.0f + Components.AimbotComponent.AimSpeed.Value)));
                                                         Input.mouse_eventWS(MouseEventFlags.MOVE, (int)slowDistX, (int)slowDistY, MouseEventDataXButtons.NONE, IntPtr.Zero);
                                                     }
 
@@ -358,7 +355,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == FeatherfallID)
+                                            if (AActorID == FeatherfallID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(new Vector3(tempVec.X, tempVec.Y, tempVec.Z + 50.0f), out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -368,7 +365,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == InvisibilityID)
+                                            if (AActorID == InvisibilityID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(new Vector3(tempVec.X, tempVec.Y, tempVec.Z + 50.0f), out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -377,7 +374,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == FlightID)
+                                            if (AActorID == FlightID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(new Vector3(tempVec.X, tempVec.Y, tempVec.Z + 50.0f), out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -386,7 +383,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == SpringstepID)
+                                            if (AActorID == SpringstepID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -395,7 +392,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == WolfsbloodID)
+                                            if (AActorID == WolfsbloodID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -404,7 +401,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == ShockID)
+                                            if (AActorID == ShockID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -413,7 +410,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == WindID)
+                                            if (AActorID == WindID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11bb = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11bb, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -422,7 +419,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == EarthID)
+                                            if (AActorID == EarthID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -431,7 +428,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == FireID)
+                                            if (AActorID == FireID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -440,7 +437,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == IceID)
+                                            if (AActorID == IceID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -449,7 +446,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == PoisonID)
+                                            if (AActorID == PoisonID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -458,7 +455,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == ShadowstepID)
+                                            if (AActorID == ShadowstepID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -467,7 +464,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == TeleportationID)
+                                            if (AActorID == TeleportationID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -476,7 +473,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == ChronomasterID)
+                                            if (AActorID == ChronomasterID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -485,7 +482,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == AmuletID)
+                                            if (AActorID == AmuletID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -494,7 +491,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == BeltID)
+                                            if (AActorID == BeltID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -503,7 +500,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == BootsID)
+                                            if (AActorID == BootsID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -512,7 +509,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == LevelUpID)
+                                            if (AActorID == LevelUpID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
@@ -521,7 +518,7 @@ namespace SpellBreak
                                                 }
                                             }
 
-                                            if (AActorID == ShrineID)
+                                            if (AActorID == ShrineID && dist <= 300)
                                             {
                                                 Vector2 vScreen_d3d11 = new Vector2(0, 0);
                                                 if (Renderer.WorldToScreenUE4(tempVec, out vScreen_d3d11, FMinimalViewInfo_Location, FMinimalViewInfo_Rotation, FMinimalViewInfo_FOV, wndMargins, wndSize))
