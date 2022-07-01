@@ -5,8 +5,8 @@ namespace SpellBreak
 public class Offsets
 
 {
-   public static Int64 UWorld = 0x738BEB8;
-   public static Int64 GNames = 0x7404700;
+   public static Int64 UWorld = 0x739F198;
+   public static Int64 GNames = 0x74179D0;
 
 public class UE
 {
