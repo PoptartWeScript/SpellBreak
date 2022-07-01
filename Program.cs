@@ -164,8 +164,8 @@ namespace SpellBreak
         }
         public static void SigScan()
         {
-            GWorldPtr = Memory.ZwReadPointer(processHandle, GameBase + 0x738BEB8, isWow64Process);
-            GNamesPtr = GameBase + 0x7404700;
+            GWorldPtr = Memory.ZwReadPointer(processHandle, GameBase + 0x739F198, isWow64Process);
+            GNamesPtr = GameBase + 0x74179D0;
         }
         private static string GetNameFromID(uint ID)
         {
